@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import './adaptative_button.dart';
+import './adaptative_textfield.dart';
+import './adaptative_datepicker.dart';
 
 class TransactionForm extends StatefulWidget {
   final void Function(String, double, DateTime) onSubmit;
 
-  const TransactionForm(this.onSubmit, {Key? key}) : super(key: key);
+  const TransactionForm(this.onSubmit);
 
   @override
   State<TransactionForm> createState() => _TransactionFormState();
@@ -13,7 +16,7 @@ class TransactionForm extends StatefulWidget {
 class _TransactionFormState extends State<TransactionForm> {
   final _titleController = TextEditingController();
   final _valueController = TextEditingController();
-  DateTime? _selectedDate = DateTime.now();
+  DateTime _selectedDate = DateTime.now();
 
   _submitForm() {
     final title = _titleController.text;
@@ -23,91 +26,56 @@ class _TransactionFormState extends State<TransactionForm> {
       return;
     }
 
-    widget.onSubmit(title, value, _selectedDate!);
-  }
-
-  _showDatePicker() {
-    showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2019),
-      lastDate: DateTime.now(),
-    ).then((pickedDate) {
-      if (pickedDate == null) {
-        return;
-      }
-
-      setState(() {
-        _selectedDate = pickedDate;
-      });
-    });
+    widget.onSubmit(title, value, _selectedDate);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 5,
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          children: [
-            TextField(
-              controller: _titleController,
-              onSubmitted: (_) => _submitForm(),
-              decoration: const InputDecoration(
-                labelText: 'Título',
+    return SingleChildScrollView(
+      child: Card(
+        elevation: 5,
+        child: Padding(
+          padding: EdgeInsets.only(
+            top: 10,
+            right: 10,
+            left: 10,
+            bottom: 5 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            children: [
+              AdaptativeTextfield(
+                titleLabel: 'Título',
+                controller: _titleController,
+                submitForm: (_) => _submitForm,
               ),
-            ),
-            TextField(
-              controller: _valueController,
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              onSubmitted: (_) => _submitForm(),
-              decoration: const InputDecoration(
-                labelText: 'Valor (R\$)',
+              AdaptativeTextfield(
+                titleLabel: 'Valor (R\$)',
+                controller: _valueController,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                submitForm: (_) => _submitForm,
               ),
-            ),
-            SizedBox(
-              height: 70,
-              child: Row(
+
+              AdaptativeDatePicker(
+                selectedDate: _selectedDate,
+                onDateChanged: (newDate) {
+                  setState(() {
+                    _selectedDate = newDate;
+                  });
+                },
+              ),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      _selectedDate == null
-                          ? 'Nenhuma data selecionada!'
-                          : 'Data Selecionada: ${DateFormat('dd/MM/y').format(_selectedDate!)}',
-                    ),
-                  ),
-                  TextButton(
-                    child: const Text(
-                      'Selecionar Data',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    onPressed: _showDatePicker,
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 15, right: 10),
+                    child: AdaptativeButton(
+                        label: '+ Adicionar', onPressed: _submitForm),
                   )
                 ],
               ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.resolveWith((color) => Colors.purple),
-                  ),
-                  child: Text(
-                    '+ Adicionar',
-                    style: TextStyle(
-                      color: Theme.of(context).textTheme.labelLarge?.color,
-                    ),
-                  ),
-                  onPressed: _submitForm,
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

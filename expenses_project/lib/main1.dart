@@ -1,9 +1,9 @@
 import 'dart:math';
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
+import 'package:expenses/components/transaction_form.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart';
+import 'package:flutter/cupertino.dart';
 
 import 'components/transaction_form.dart';
 import 'components/transaction_list.dart';
@@ -18,8 +18,6 @@ class ExpensesApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
     return MaterialApp(
       home: const MyHomePage(),
       theme: tema.copyWith(
@@ -28,13 +26,13 @@ class ExpensesApp extends StatelessWidget {
           secondary: Colors.amber,
         ),
         textTheme: tema.textTheme.copyWith(
-          titleLarge: const TextStyle(
+          headline6: const TextStyle(
             fontFamily: 'OpenSans',
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.black,
           ),
-          labelLarge: const TextStyle(
+          button: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -111,13 +109,10 @@ class _MyHomePageState extends State<MyHomePage> {
     final mediaQuery = MediaQuery.of(context);
     bool isLandscape = mediaQuery.orientation == Orientation.landscape;
 
-    final iconList = Platform.isIOS ? CupertinoIcons.refresh : Icons.list;
-    final iconChart = Platform.isIOS ? CupertinoIcons.refresh : Icons.show_chart;
-
     final actions = [
       if (isLandscape)
         _getIconButton(
-          _showChart ? iconList : iconChart,
+          _showChart ? Icons.list : Icons.show_chart,
           () {
             setState(() {
               _showChart = !_showChart;
@@ -131,75 +126,52 @@ class _MyHomePageState extends State<MyHomePage> {
     ];
 
     final PreferredSizeWidget appBar = AppBar(
-      title: const Text(
-        'Despesas Pessoais',
-        style: TextStyle(color: Colors.black),
-      ),
+      title: const Text('Despesas Pessoais'),
       actions: actions,
     );
-
-    // final PreferredSizeWidget appBar = Platform.isIOS
-    //     ? CupertinoNavigationBar(
-    //         middle: Text('despesas pessoais'),
-    //         trailing: Row(
-    //           mainAxisSize: MainAxisSize.min,
-    //           children: actions,
-    //         ) as PreferredSizeWidget,
-    //       )
-    //     : AppBar(
-    //         title: Text('Despesas pessoais'),
-    //         actions: actions,
-    //       ) as PreferredSizeWidget;
 
     final availableHeight = mediaQuery.size.height -
         appBar.preferredSize.height -
         mediaQuery.padding.top;
 
-    final bodyPage = SafeArea(
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // if (isLandscape)
-              //   Row(
-              //     mainAxisAlignment: MainAxisAlignment.end,
-              //     children: [
-              //       const Text('Exibir Gráfico'),
-              //       Switch(
-              //         value: _showChart,
-              //         onChanged: (value) {
-              //           setState(() {
-              //             _showChart = value;
-              //           });
-              //         },
-              //       ),
-              //     ],
-              //   ),
-              if (_showChart || !isLandscape)
-                Container(
-                  height: availableHeight * (isLandscape ? 0.7 : 0.2),
-                  child: Chart(_recentTransactions),
-                ),
-              if (!_showChart || !isLandscape)
-                SizedBox(
-                  height: availableHeight * (isLandscape ? 1 : 0.75),
-                  child: TransactionList(_transactions, _removeTransaction),
-                ),
-            ],
-          ),
-        ),
+    final bodyPage = SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // if (isLandscape)
+          //   Row(
+          //     mainAxisAlignment: MainAxisAlignment.center,
+          //     children: [
+          //       const Text('Exibir Gráfico'),
+          //       Switch.adaptive(
+          //         activeColor: Theme.of(context).colorScheme.secondary,
+          //         value: _showChart,
+          //         onChanged: (value) {
+          //           setState(() {
+          //             _showChart = value;
+          //           });
+          //         },
+          //       ),
+          //     ],
+          //   ),
+          if (_showChart || !isLandscape)
+            SizedBox(
+              height: availableHeight * (isLandscape ? 0.8 : 0.3),
+              child: Chart(_recentTransactions),
+            ),
+          if (!_showChart || !isLandscape)
+            SizedBox(
+              height: availableHeight * (isLandscape ? 1 : 0.7),
+              child: TransactionList(_transactions, _removeTransaction),
+            ),
+        ],
       ),
     );
 
     return Platform.isIOS
         ? CupertinoPageScaffold(
             navigationBar: CupertinoNavigationBar(
-              middle: const Text(
-                'Despesas Pessoais',
-                style: TextStyle(color: Colors.black),
-              ),
+              middle: const Text('Despesas Pessoais'),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: actions,
@@ -210,7 +182,7 @@ class _MyHomePageState extends State<MyHomePage> {
         : Scaffold(
             appBar: appBar,
             body: bodyPage,
-            floatingActionButton: isLandscape || Platform.isIOS
+            floatingActionButton: Platform.isIOS
                 ? Container()
                 : FloatingActionButton(
                     child: const Icon(Icons.add),
@@ -219,23 +191,5 @@ class _MyHomePageState extends State<MyHomePage> {
             floatingActionButtonLocation:
                 FloatingActionButtonLocation.centerFloat,
           );
-
-    // return Platform.isIOS
-    //     ? CupertinoPageScaffold(
-    //         navigationBar: appBar as ObstructingPreferredSizeWidget, //parse
-    //         child: bodyPage,
-    //       )
-    //     : Scaffold(
-    //         appBar: appBar,
-    //         body: bodyPage,
-    //         floatingActionButton: Platform.isIOS
-    //             ? Container()
-    //             : FloatingActionButton(
-    //                 child: Icon(Icons.add),
-    //                 onPressed: () => _openTransactionFormModal(context),
-    //               ),
-    //         floatingActionButtonLocation:
-    //             FloatingActionButtonLocation.centerFloat,
-    //       );
   }
 }
